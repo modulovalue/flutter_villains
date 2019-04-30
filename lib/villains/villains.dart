@@ -8,13 +8,13 @@ class VillainController {
   static Future playAllVillains(BuildContext context, {bool entrance = true, bool didPop = false}) {
     List<_VillainState> villains = VillainController._allVillainsFor(context)
       ..removeWhere((villain) {
-        if(entrance) {
-          if(!villain.widget.animateEntrance) return true;
+        if (entrance) {
+          if (!villain.widget.animateEntrance) return true;
         } else {
-          if(!villain.widget.animateExit) return true;
+          if (!villain.widget.animateExit) return true;
         }
-        if(didPop) {
-          if(!villain.widget.animateReEntrance) return true;
+        if (didPop) {
+          if (!villain.widget.animateReEntrance) return true;
         }
         return false;
       });
@@ -64,6 +64,7 @@ class VillainController {
     return villains;
   }
 }
+
 /// A widget which animates when a page transition occurs.
 ///
 /// This class warps its child in an [AnimatedWidget] and handles its animation
@@ -74,15 +75,14 @@ class VillainController {
 /// navigatorObservers: [new VillainTransitionObserver()],
 /// ```
 class Villain extends StatefulWidget {
-
   const Villain(
       {Key key,
-        @required this.villainAnimation,
-        this.secondaryVillainAnimation,
-        this.child,
-        this.animateEntrance = true,
-        this.animateExit = true,
-        this.animateReEntrance = true})
+      @required this.villainAnimation,
+      this.secondaryVillainAnimation,
+      this.child,
+      this.animateEntrance = true,
+      this.animateExit = true,
+      this.animateReEntrance = true})
       : super(key: key);
 
   final VillainAnimation villainAnimation;
@@ -101,13 +101,13 @@ class Villain extends StatefulWidget {
 class _VillainState extends State<Villain> {
   Animation<double> _controllerAnimation;
 
-
   void startAnimation(Animation<double> animation) {
     assert(animation != null);
     _controllerAnimation?.removeStatusListener(_handleStatusChange);
-    setState(() {
-      this._controllerAnimation = animation;
-    });
+    if (!mounted)
+      setState(() {
+        this._controllerAnimation = animation;
+      });
     animation.addStatusListener(_handleStatusChange);
   }
 
@@ -116,28 +116,27 @@ class _VillainState extends State<Villain> {
       return _controllerAnimation;
     }
     return AlwaysStoppedAnimation<double>(1.0);
-
   }
 
   void _handleStatusChange(AnimationStatus status) {
     if (status == AnimationStatus.dismissed || status == AnimationStatus.completed) {
       if (_controllerAnimation != null) {
         _controllerAnimation.removeStatusListener(_handleStatusChange);
-        setState(() {
-          _controllerAnimation = null;
-        });
+        if (!mounted)
+          setState(() {
+            _controllerAnimation = null;
+          });
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    Widget animatedWidget = widget.villainAnimation.animatedWidgetBuilder(
-        widget.villainAnimation.animatable.chain(CurveTween(curve: widget.villainAnimation.curve)).animate(_animation), widget.child);
+    Widget animatedWidget = widget.villainAnimation
+        .animatedWidgetBuilder(widget.villainAnimation.animatable.chain(CurveTween(curve: widget.villainAnimation.curve)).animate(_animation), widget.child);
     if (widget.secondaryVillainAnimation != null) {
       animatedWidget = widget.secondaryVillainAnimation.animatedWidgetBuilder(
-          widget.secondaryVillainAnimation.animatable.chain(CurveTween(curve: widget.secondaryVillainAnimation.curve)).animate(_animation),
-          animatedWidget);
+          widget.secondaryVillainAnimation.animatable.chain(CurveTween(curve: widget.secondaryVillainAnimation.curve)).animate(_animation), animatedWidget);
     }
 
     return animatedWidget;
@@ -368,14 +367,12 @@ class VillainTransitionObserver extends NavigatorObserver {
     _prepareVillainTransition(route, previousRoute, true);
   }
 
-
   @override
   void didReplace({Route<dynamic> newRoute, Route<dynamic> oldRoute}) {
     assert(navigator != null);
     assert(newRoute != null);
     _prepareVillainTransition(oldRoute, newRoute, false);
   }
-
 
   @override
   void didRemove(Route<dynamic> route, Route<dynamic> previousRoute) {
@@ -419,11 +416,11 @@ class VillainTransitionObserver extends NavigatorObserver {
     }
 
     // Can be null because of didReplace and didRemove
-    if(to != null) {
+    if (to != null) {
       VillainController.playAllVillains(to.subtreeContext, entrance: true, didPop: didPop);
     }
 
-    if(to != null) {
+    if (to != null) {
       List<_VillainState> villains2 = VillainController._allVillainsFor(from.subtreeContext);
 
       //The animations from the previous page are driven by the transition animation because the page will not be visible afterwards, any animation after that
