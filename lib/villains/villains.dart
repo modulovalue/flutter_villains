@@ -104,7 +104,7 @@ class _VillainState extends State<Villain> {
   void startAnimation(Animation<double> animation) {
     assert(animation != null);
     _controllerAnimation?.removeStatusListener(_handleStatusChange);
-    if (!mounted)
+    if (mounted)
       setState(() {
         this._controllerAnimation = animation;
       });
@@ -122,7 +122,7 @@ class _VillainState extends State<Villain> {
     if (status == AnimationStatus.dismissed || status == AnimationStatus.completed) {
       if (_controllerAnimation != null) {
         _controllerAnimation.removeStatusListener(_handleStatusChange);
-        if (!mounted)
+        if (mounted)
           setState(() {
             _controllerAnimation = null;
           });
